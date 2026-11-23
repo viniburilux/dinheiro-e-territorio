@@ -102,7 +102,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 
 <section id="mapa"><div class="wrap">
 <h2>O mapa municipal</h2>
-<p class="sec-sub">Cada município colorido pelo crédito associado aos imóveis rurais nele localizados. Alterne a regra de rateio, filtre por estado e clique para ver os valores. Cinza: sem crédito territorializado em 2023.</p>
+<p class="sec-sub">Cada município colorido pelo crédito associado aos imóveis rurais nele localizados. Alterne a regra de rateio, filtre por região, estado ou faixa de crédito e clique para ver os valores. Cinza: sem crédito territorializado em 2023.</p>
 <div id="mapwrap">
 <div id="map"></div>
 <div class="ctl">
@@ -112,8 +112,12 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 <option value="ca">Crédito: rateio por área</option>
 <option value="ops">Número de operações</option>
 </select>
+<label>Região</label>
+<select id="reg"><option value="">Todas</option><option value="1">Norte</option><option value="2">Nordeste</option><option value="5">Centro-Oeste</option><option value="3">Sudeste</option><option value="4">Sul</option></select>
 <label>Estado</label>
 <select id="uf"><option value="">Brasil (todos)</option></select>
+<label>Crédito mínimo</label>
+<select id="vmin"><option value="0">Qualquer valor</option><option value="1000000">R$ 1 mi +</option><option value="10000000">R$ 10 mi +</option><option value="50000000">R$ 50 mi +</option><option value="100000000">R$ 100 mi +</option><option value="500000000">R$ 500 mi +</option><option value="1000000000">R$ 1 bi +</option></select>
 <label>Buscar município</label>
 <input id="q" type="text" placeholder="Digite o nome..." list="muns" autocomplete="off">
 <datalist id="muns"></datalist>
@@ -125,8 +129,10 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 
 <section><div class="wrap grid2">
 <div>
-<h2>Top 15 municípios</h2>
-<p class="sec-sub">Por crédito territorializado (rateio igual), 2023.</p>
+<h2>Ranking municipal</h2>
+<p class="sec-sub">Por crédito territorializado, 2023. Acompanha o indicador escolhido no mapa.</p>
+<label for="topn" style="color:var(--mut);font-size:13px">Quantidade</label>
+<select id="topn" style="margin:6px 0 12px"><option value="15">Top 15</option><option value="50">Top 50</option><option value="100">Top 100</option></select>
 <div class="panel"><div class="bars" id="top15"></div></div>
 </div>
 <div id="metodo">
@@ -201,7 +207,6 @@ Limites: o crédito é associado ao imóvel e rateado por município; não é co
 <script src="data-part6.js"></script>
 <script src="data-part7.js"></script>
 <script src="data-part8.js"></script>
-<script src="data-meta.js"></script>
 <script>window.MUN_GEO = {type:'FeatureCollection', features: window.MUN_PARTS.reduce(function(a,p){return a.concat(p.features)},[])};</script>
 <script>
 var UF={11:'Rondônia',12:'Acre',13:'Amazonas',14:'Roraima',15:'Pará',16:'Amapá',17:'Tocantins',21:'Maranhão',22:'Piauí',23:'Ceará',24:'Rio Grande do Norte',25:'Paraíba',26:'Pernambuco',27:'Alagoas',28:'Sergipe',29:'Bahia',31:'Minas Gerais',32:'Espírito Santo',33:'Rio de Janeiro',35:'São Paulo',41:'Paraná',42:'Santa Catarina',43:'Rio Grande do Sul',50:'Mato Grosso do Sul',51:'Mato Grosso',52:'Goiás',53:'Distrito Federal'};
@@ -213,21 +218,24 @@ var RAMP=['#1a2e22','#1f6f3f','#2e9e52','#5cc476','#a6e3a1','#e8f5b0'];
 function values(m){return feats.map(function(f){return f.properties[m]}).filter(function(v){return v!=null&&v>0}).sort(function(a,b){return a-b})}
 function breaks(m){var v=values(m),b=[],n=RAMP.length;for(var i=1;i<n;i++){b.push(v[Math.floor(v.length*Math.pow(i/n,2.2))])}return b}
 function color(v,br){if(v==null||v<=0)return '#20262e';for(var i=0;i<br.length;i++){if(v<=br[i])return RAMP[i]}return RAMP[RAMP.length-1]}
-var cur='ci',br=breaks(cur),layer;
-function sty(f){var v=f.properties[cur];return{color:'#0b0f14',weight:.4,fillColor:color(v,br),fillOpacity:v?0.92:0.55}}
+var cur='ci',br=breaks(cur),layer,vmin=0;
+function sty(f){var p=f.properties,v=p[cur];if(vmin>0&&cur!=='ops'&&!(v!=null&&v>=vmin))return{color:'#0b0f14',weight:.3,fillColor:'#161b22',fillOpacity:.3};return{color:'#0b0f14',weight:.4,fillColor:color(v,br),fillOpacity:v?0.92:0.55}}
 function pop(p){return '<div class="pop"><b>'+p.name+'</b> <span style="color:#8b98a9">· '+(UF[p.id.substring(0,2)]||'')+'</span><div class="row"><span>Crédito (rateio igual)</span><span>'+fmt(p.ci)+'</span></div><div class="row"><span>Crédito (por área)</span><span>'+fmt(p.ca)+'</span></div><div class="row"><span>Operações</span><span>'+(p.ops==null?'—':p.ops.toLocaleString('pt-BR'))+'</span></div></div>'}
 function draw(){if(layer)map.removeLayer(layer);br=breaks(cur);layer=L.geoJson(window.MUN_GEO,{style:sty,onEachFeature:function(f,l){l.bindPopup(pop(f.properties));l.on('mouseover',function(){l.setStyle({weight:1.6,color:'#e3b341'})});l.on('mouseout',function(){layer.resetStyle(l)})}}).addTo(map);legend()}
 function legend(){var el=document.getElementById('legend'),h='<label style="color:#8b98a9">Legenda</label>',lab=cur==='ops'?'':'R$';for(var i=0;i<RAMP.length;i++){var lo=i===0?(cur==='ops'?'1+':'> 0'):fmt(br[i-1]).replace('R$ ','');var hi=i<RAMP.length-1?' – '+fmt(br[i]).replace('R$ ',''):'+';h+='<div><span class="sw" style="background:'+RAMP[i]+'"></span>'+(lab?lab+' ':'')+lo+(i<RAMP.length-1?hi:(br.length?'+' :''))+'</div>'}h+='<div><span class="sw" style="background:#20262e"></span>sem crédito territorializado</div>';el.innerHTML=h}
 draw();
-document.getElementById('metric').onchange=function(e){cur=e.target.value;draw()};
+document.getElementById('metric').onchange=function(e){cur=e.target.value;draw();renderTop()};
 var ufs={};feats.forEach(function(f){var u=f.properties.id.substring(0,2);ufs[u]=(ufs[u]||0)+1});
 var sel=document.getElementById('uf');Object.keys(ufs).sort(function(a,b){return UF[a].localeCompare(UF[b])}).forEach(function(u){var o=document.createElement('option');o.value=u;o.textContent=UF[u];sel.appendChild(o)});
-sel.onchange=function(){var u=sel.value;if(!u){map.setView([-14.5,-54],4);return}var b=L.latLngBounds();layer.eachLayer(function(l){if(l.feature.properties.id.substring(0,2)===u)b.extend(l.getBounds())});if(b.isValid())map.flyToBounds(b,{padding:[20,20]})};
+sel.onchange=function(){var u=sel.value;document.getElementById('reg').value='';renderTop();if(!u){map.setView([-14.5,-54],4);return}var b=L.latLngBounds();layer.eachLayer(function(l){if(l.feature.properties.id.substring(0,2)===u)b.extend(l.getBounds())});if(b.isValid())map.flyToBounds(b,{padding:[20,20]})};
+document.getElementById('reg').onchange=function(e){var r=e.target.value;sel.value='';renderTop();if(!r){map.setView([-14.5,-54],4);return}var b=L.latLngBounds();layer.eachLayer(function(l){if(l.feature.properties.id.substring(0,1)===r)b.extend(l.getBounds())});if(b.isValid())map.flyToBounds(b,{padding:[20,20]})};
+document.getElementById('vmin').onchange=function(e){vmin=+e.target.value;draw();renderTop()};
 var dl=document.getElementById('muns');feats.forEach(function(f){if(f.properties.ci!=null){var o=document.createElement('option');o.value=f.properties.name+' ('+(UF[f.properties.id.substring(0,2)]||'')+')';dl.appendChild(o)}});
 document.getElementById('q').onchange=function(e){var v=e.target.value.replace(/\s*\(.*\)$/,'').toLowerCase();var hit=null;layer.eachLayer(function(l){if(!hit&&l.feature.properties.name.toLowerCase()===v)hit=l});if(hit){map.flyToBounds(hit.getBounds(),{maxZoom:9});hit.openPopup()}};
-var M=window.META,max=M.top[0].ci,html='';
-M.top.forEach(function(t){html+='<div class="bar-row"><div class="nm">'+t.name+'</div><div class="bar" style="width:'+Math.max(2,Math.round(100*t.ci/max))+'%"></div><div class="vl">'+fmt(t.ci)+'</div></div>'});
-document.getElementById('top15').innerHTML=html;
+function inScope(p){var u=document.getElementById('uf').value,r=document.getElementById('reg').value;if(u&&p.id.substring(0,2)!==u)return false;if(r&&p.id.substring(0,1)!==r)return false;if(vmin>0&&cur!=='ops'&&!(p[cur]!=null&&p[cur]>=vmin))return false;return true}
+function renderTop(){var n=+document.getElementById('topn').value;var arr=feats.filter(function(f){return inScope(f.properties)&&f.properties[cur]!=null&&f.properties[cur]>0}).sort(function(a,b){return b.properties[cur]-a.properties[cur]}).slice(0,n);var max=arr.length?arr[0].properties[cur]:1,html='';arr.forEach(function(f){var v=f.properties[cur];html+='<div class="bar-row"><div class="nm">'+f.properties.name+' ('+(UF[f.properties.id.substring(0,2)]||'')+')</div><div class="bar" style="width:'+Math.max(2,Math.round(100*v/max))+'%"></div><div class="vl">'+(cur==='ops'?v.toLocaleString('pt-BR'):fmt(v))+'</div></div>'});document.getElementById('top15').innerHTML=html}
+document.getElementById('topn').onchange=renderTop;
+renderTop();
 </script>
 </body>
 </html>
