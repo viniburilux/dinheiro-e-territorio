@@ -60,6 +60,67 @@ h2{font-size:24px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
 .step{display:flex;gap:14px}
 .step .dot{width:12px;height:12px;border-radius:50%;background:var(--green);margin-top:6px;flex:none;box-shadow:0 0 0 4px rgba(63,185,80,.15)}
 .step:not(:last-child) .line{width:2px;background:var(--line);margin-left:5px;flex:none}
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O Dinheiro e o Território — Crédito rural público por município (SICOR × CAR, 2023)</title>
+<meta name="description" content="Para onde vai o crédito rural público brasileiro? R$ 112,13 bilhões de 2023 territorializados pelos imóveis rurais (CAR) em 5.380 municípios. Dataset aberto com DOI.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0b0f14;--panel:#11161d;--panel2:#161d27;--line:#232c38;--txt:#e6edf3;--mut:#8b98a9;--green:#3fb950;--gold:#e3b341;--blue:#58a6ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:1000;background:rgba(11,15,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{font-weight:700;font-size:15px;letter-spacing:.2px}
+.brand span{color:var(--gold)}
+nav{display:flex;gap:18px;font-size:14px;align-items:center}
+.doi-badge{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:12.5px;color:var(--mut)}
+.doi-badge b{color:var(--green);font-weight:600}
+.hero{padding:64px 0 40px}
+.kicker{color:var(--green);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.12;font-weight:800;letter-spacing:-.5px;max-width:800px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--mut);font-size:17px;max-width:760px;margin-top:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:36px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.kpi .v{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.kpi .l{color:var(--mut);font-size:13px;margin-top:4px}
+.kpi .v small{font-size:15px;color:var(--mut);font-weight:600}
+section{padding:44px 0}
+h2{font-size:24px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
+.sec-sub{color:var(--mut);font-size:14.5px;margin-bottom:20px;max-width:760px}
+#mapwrap{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+#map{height:560px;background:#0b0f14}
+.ctl{position:absolute;top:12px;right:12px;z-index:800;background:rgba(17,22,29,.95);border:1px solid var(--line);border-radius:12px;padding:14px;width:250px;font-size:13px}
+.ctl label{display:block;color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;margin:10px 0 4px}
+.ctl label:first-child{margin-top:0}
+.ctl select,.ctl input{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:13.5px}
+.legend{margin-top:12px}
+.legend .sw{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:7px;vertical-align:-2px}
+.legend div{font-size:11.5px;color:var(--mut);margin-top:3px}
+.leaflet-popup-content-wrapper{background:var(--panel2);color:var(--txt);border-radius:10px}
+.leaflet-popup-tip{background:var(--panel2)}
+.leaflet-container a.leaflet-popup-close-button{color:var(--mut)}
+.pop b{font-size:15px}
+.pop .row{display:flex;justify-content:space-between;gap:16px;font-size:13px;margin-top:3px}
+.pop .row span:last-child{font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}#map{height:440px}.ctl{width:210px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px}
+.bars{margin-top:8px}
+.bar-row{display:grid;grid-template-columns:180px 1fr 110px;gap:10px;align-items:center;margin-top:7px;font-size:13px}
+.bar-row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.bar-row .vl{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+.bar{height:14px;border-radius:4px;background:linear-gradient(90deg,#1f6f3f,var(--green))}
+.flow{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:14px}
+.step .dot{width:12px;height:12px;border-radius:50%;background:var(--green);margin-top:6px;flex:none;box-shadow:0 0 0 4px rgba(63,185,80,.15)}
+.step:not(:last-child) .line{width:2px;background:var(--line);margin-left:5px;flex:none}
 .step .tx{padding-bottom:20px}
 .step .tx b{display:block;font-size:15px}
 .step .tx p{color:var(--mut);font-size:13.5px;margin-top:2px}
@@ -172,7 +233,16 @@ Limites: o crédito é associado ao imóvel e rateado por município — não é
 </div></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="data.js"></script>
+<script src="data-part1.js"></script>
+<script src="data-part2.js"></script>
+<script src="data-part3.js"></script>
+<script src="data-part4.js"></script>
+<script src="data-part5.js"></script>
+<script src="data-part6.js"></script>
+<script src="data-part7.js"></script>
+<script src="data-part8.js"></script>
+<script src="data-meta.js"></script>
+<script>window.MUN_GEO = {type:'FeatureCollection', features: window.MUN_PARTS.reduce(function(a,p){return a.concat(p.features)},[])};</script>
 <script>
 var UF={11:'Rondônia',12:'Acre',13:'Amazonas',14:'Roraima',15:'Pará',16:'Amapá',17:'Tocantins',21:'Maranhão',22:'Piauí',23:'Ceará',24:'Rio Grande do Norte',25:'Paraíba',26:'Pernambuco',27:'Alagoas',28:'Sergipe',29:'Bahia',31:'Minas Gerais',32:'Espírito Santo',33:'Rio de Janeiro',35:'São Paulo',41:'Paraná',42:'Santa Catarina',43:'Rio Grande do Sul',50:'Mato Grosso do Sul',51:'Mato Grosso',52:'Goiás',53:'Distrito Federal'};
 function fmt(v){if(v==null)return '—';if(v>=1e9)return 'R$ '+(v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:2})+' bi';if(v>=1e6)return 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi';if(v>=1e3)return 'R$ '+(v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil';return 'R$ '+v.toLocaleString('pt-BR')}
